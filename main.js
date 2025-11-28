@@ -105,9 +105,11 @@ window.addEventListener("DOMContentLoaded", async () => {
         console.log("投票ページに遷移されました。");
         window.location.href = "vote.html";
     });
-});
 
-document.getElementById("startAdminButton").addEventListener("click", () => {
-    console.log("管理者画面に遷移されました。");
-    window.location.href = "admin.html";
+    document
+        .getElementById("startAdminButton")
+        .addEventListener("click", () => {
+            console.log("管理者画面に遷移されました。");
+            window.location.href = "admin.html";
+        });
 });
