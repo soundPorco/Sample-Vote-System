@@ -1,0 +1,27 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* main */
+
+main {
+    padding: 5rem 2rem;
+}
+header {
+    text-align: center;
+}
+
+form {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.vote-button {
+    display: block;
+    margin: 2rem auto;
+    padding: 1rem 2rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+}

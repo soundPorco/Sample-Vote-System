@@ -1,0 +1,62 @@
+<!-- admin　管理者画面 -->
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>管理者画面</title>
+        <link rel="stylesheet" href="admin.css" />
+    </head>
+    <body>
+        <header>
+            <h1>投票集計（管理画面）</h1>
+            <div id="counts">集計を読み込み中…</div>
+        </header>
+
+        <script type="module">
+            // --- ここに Firebase SDK のモジュールを読み込む ---
+            // （softwear develop kit・特定のシステムやプラットフォームで動くアプリケーションを開発するために必要なツール一式を、開発環境に導入・構成すること)
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+            import {
+                getFirestore,
+                collection,
+                getDocs,
+            } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+            // --- ① ここにあなたの firebaseConfig を貼る ---
+            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+            const firebaseConfig = {
+                apiKey: "AIzaSyC099WeMuc_p9uHecSmzbthc392shE0rbY",
+                authDomain: "vote-system-d3625.firebaseapp.com",
+                projectId: "vote-system-d3625",
+                storageBucket: "vote-system-d3625.firebasestorage.app",
+                messagingSenderId: "1072198414942",
+                appId: "1:1072198414942:web:e9b4fd628b41b7962dbacf",
+                measurementId: "G-E0VJCHH2E5",
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+
+            async function loadCounts() {
+                const snapshot = await getDocs(collection(db, "votes"));
+                const counts = {};
+                snapshot.forEach((doc) => {
+                    const v = doc.data().vote;
+                    counts[v] = (counts[v] || 0) + 1;
+                });
+                // JSON形式で見やすく表示
+                document.getElementById("counts").innerText = JSON.stringify(
+                    // 集計結果オブジェクト
+                    counts,
+                    // 全ての投票結果を表示する
+                    null,
+                    // インデントを2スペースに設定
+                    2
+                );
+            }
+
+            loadCounts();
+        </script>
+    </body>
+</html>

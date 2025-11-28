@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="vote.css" />
+        <title>Document</title>
+    </head>
+    <body>
+        <main>
+            <header>
+                <h1>投票ページ</h1>
+                <p>良かった企画を選んでください</p>
+            </header>
+
+            <form id="voteForm">
+                <label
+                    ><input type="radio" name="choice" value="crepe" />
+                    クレープ</label
+                ><br />
+                <label
+                    ><input type="radio" name="choice" value="dance" />
+                    ダンス</label
+                ><br />
+                <label
+                    ><input type="radio" name="choice" value="band" />
+                    バンド</label
+                ><br />
+                <button type="submit" class="vote-button">投票する</button>
+            </form>
+        </main>
+
+        <script type="module">
+            // --- ここに Firebase SDK のモジュールを読み込む ---
+            // （softwear develop kit・特定のシステムやプラットフォームで動くアプリケーションを開発するために必要なツール一式を、開発環境に導入・構成すること)
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+            import {
+                getFirestore,
+                collection,
+                addDoc,
+                getDocs,
+                serverTimestamp,
+            } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+            // --- ① ここにあなたの firebaseConfig を貼る ---
+            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+            const firebaseConfig = {
+                apiKey: "AIzaSyC099WeMuc_p9uHecSmzbthc392shE0rbY",
+                authDomain: "vote-system-d3625.firebaseapp.com",
+                projectId: "vote-system-d3625",
+                storageBucket: "vote-system-d3625.firebasestorage.app",
+                messagingSenderId: "1072198414942",
+                appId: "1:1072198414942:web:e9b4fd628b41b7962dbacf",
+                measurementId: "G-E0VJCHH2E5",
+            };
+
+            // --- 初期化 ---
+            const app = initializeApp(firebaseConfig);
+            // 初期化されたFirebaseアプリのオブジェクト。
+            const db = getFirestore(app);
+            // Firestore（データベース）にアクセスするためのオブジェクト。
+
+            // --- デバイストークン（localStorage） ---
+            // index.htmlで取得しているが、念のためここでも確認・生成する
+            // 同一のドメイン内であればlocalStorageは共有される
+            function createDeviceToken() {
+                let token = localStorage.getItem("device_token");
+                if (!token) {
+                    token = crypto.randomUUID();
+                    localStorage.setItem("device_token", token);
+                }
+                return token;
+            }
+            createDeviceToken();
+
+            // --- 投票送信処理 ---
+            document
+                .getElementById("voteForm")
+                // フォームに対して「送信イベント（submit）」が発生した時に実行する処理
+                .addEventListener("submit", async (e) => {
+                    e.preventDefault(); // フォームのデフォルトの送信動作をキャンセル
+                    // 今回は ページをリロードさせず、JavaScriptで Firebase に送信したい。
+                    const choice = document.querySelector(
+                        "input[name='choice']:checked"
+                    );
+                    if (!choice) {
+                        alert("選択してください");
+                        return;
+                    }
+
+                    const payload = {
+                        token: localStorage.getItem("device_token"),
+                        vote: choice.value,
+                        // 自動的にfirestore側がサーバー時間を記録
+                        createdAt: serverTimestamp(),
+                    };
+
+                    try {
+                        // 重複投票チェック
+                        const snapshot = await getDocs(collection(db, "votes"));
+                        let alreadyVoted = false;
+                        snapshot.forEach((doc) => {
+                            const data = doc.data();
+                            if (data.token === payload.token) {
+                                alreadyVoted = true;
+                            }
+                        });
+                        if (alreadyVoted) {
+                            alert("既に投票済みです。");
+                            return;
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert("送信に失敗しました。時間をおいてください。");
+                    }
+
+                    try {
+                        // Firestoreの"votes"コレクションにドキュメントを追加
+                        // 追加するデータはpayload
+                        // addDocはしてされた場所にデータを追加する処理のため、その場所がまだなければ自動で作られる
+                        await addDoc(collection(db, "votes"), payload);
+                        alert("投票ありがとうございました！");
+                        // 必要なら遷移 or ボタン無効化
+                    } catch (err) {
+                        console.error(err);
+                        alert("送信に失敗しました。時間をおいてください。");
+                    }
+                });
+        </script>
+    </body>
+</html>
