@@ -106,3 +106,8 @@ window.addEventListener("DOMContentLoaded", async () => {
         window.location.href = "vote.html";
     });
 });
+
+document.getElementById("startAdminButton").addEventListener("click", () => {
+    console.log("管理者画面に遷移されました。");
+    window.location.href = "admin.html";
+});
